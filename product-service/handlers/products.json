@@ -1,0 +1,58 @@
+[
+  {
+    "count": 4,
+    "description": "A Modern Introduction to Programming",
+    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
+    "price": 2.4,
+    "title": "Eloquent JavaScript, Second Edition"
+  },
+  {
+    "count": 6,
+    "description": "A JavaScript and jQuery Developer's Guide",
+    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80a0",
+    "price": 10,
+    "title": "Learning JavaScript Design Patterns"
+  },
+  {
+    "count": 7,
+    "description": "An In-Depth Guide for Programmers",
+    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80a2",
+    "price": 23,
+    "title": "Speaking JavaScript"
+  },
+  {
+    "count": 12,
+    "description": "Robust Web Architecture with Node, HTML5, and Modern JS Libraries",
+    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80a1",
+    "price": 15,
+    "title": "Programming JavaScript Applications"
+  },
+  {
+    "count": 7,
+    "description": "The Definitive Guide for JavaScript Developers",
+    "id": "7567ec4b-b10c-48c5-9345-fc73c48a80a3",
+    "price": 23,
+    "title": "Understanding ECMAScript 6"
+  },
+  {
+    "count": 8,
+    "description": "ES6 & Beyond",
+    "id": "7567ec4b-b10c-48c5-9345-fc73348a80a1",
+    "price": 15,
+    "title": "You Don't Know JS"
+  },
+  {
+    "count": 2,
+    "description": "A Working Introduction",
+    "id": "7567ec4b-b10c-48c5-9445-fc73c48a80a2",
+    "price": 23,
+    "title": "Git Pocket Guide"
+  },
+  {
+    "count": 3,
+    "description": "Harnessing the Power of the Web",
+    "id": "7567ec4b-b10c-45c5-9345-fc73c48a80a1",
+    "price": 15,
+    "title": "Designing Evolvable Web APIs with ASP.NET"
+  }
+]
