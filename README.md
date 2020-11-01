@@ -1,1 +1,1 @@
-# shop-be
+# Book Shop Backend
