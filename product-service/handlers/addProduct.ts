@@ -1,16 +1,18 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
+import { Client, QueryResult } from "pg";
 import "source-map-support/register";
-import { Client } from "pg";
+
 import { generateResponse } from "./utils";
 import { dbOptions } from "../db/dbOptions";
-import { Product, validateProduct } from "../db/productSchema";
+import { Product, Validation, validateProduct } from "../db/productSchema";
 
 export const addProduct: APIGatewayProxyHandler = async (event) => {
   console.log(event);
-  let client;
+  let client: Client;
+
   try {
     const product: Product = JSON.parse(event.body);
-    const validation = validateProduct(product);
+    const validation: Validation = validateProduct(product);
 
     if (validation) {
       return generateResponse({
@@ -20,18 +22,20 @@ export const addProduct: APIGatewayProxyHandler = async (event) => {
     }
 
     const { title, description, price, count } = product;
+
     client = new Client(dbOptions);
     await client.connect();
-
     await client.query("begin"); // transaction starts
 
-    const insertedProductRes = await client.query(
+    const insertedProductRes: QueryResult<Product> = await client.query(
       "insert into products (title, description, price) values ($1, $2, $3) returning *",
       [title, description, price]
     );
+    const insertedProduct: Product = insertedProductRes.rows[0];
+
     await client.query(
       "insert into stocks (product_id, count) values ($1, $2)",
-      [insertedProductRes.rows[0].id, count]
+      [insertedProduct.id, count]
     );
 
     await client.query("commit"); // transaction ends
@@ -39,7 +43,7 @@ export const addProduct: APIGatewayProxyHandler = async (event) => {
     return generateResponse({
       code: 201,
       body: {
-        ...insertedProductRes.rows[0],
+        ...insertedProduct,
         count,
       },
     });

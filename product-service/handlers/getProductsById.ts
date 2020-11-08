@@ -1,19 +1,21 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import { Client } from "pg";
+import { Client, QueryResult } from "pg";
 import "source-map-support/register";
-import { dbOptions } from "../db/dbOptions";
 
+import { dbOptions } from "../db/dbOptions";
+import { Product } from "../db/productSchema";
 import { generateResponse } from "./utils";
 
 export const getProductsById: APIGatewayProxyHandler = async (event) => {
   console.log(event);
-  let client;
+  let client: Client;
+
   try {
     const { productId } = event.pathParameters;
     client = new Client(dbOptions);
     await client.connect();
 
-    const { rows: products } = await client.query(
+    const queryResult: QueryResult<Product> = await client.query(
       `
         select p.id, s.count, p.price, p.title, p.description
         from products as p
@@ -24,14 +26,17 @@ export const getProductsById: APIGatewayProxyHandler = async (event) => {
       [productId]
     );
 
-    if (products && products.length) {
-      return generateResponse({ body: products[0] });
+    if (queryResult.rows.length) {
+      const product: Product = queryResult.rows[0];
+      return generateResponse({ body: product });
     }
+
     return generateResponse({
       code: 404,
-      body: { error: "Product not found" },
+      body: { error: "Product not found in db" },
     });
-  } catch {
+  } catch (err) {
+    console.error(err);
     return generateResponse({
       code: 500,
       body: { error: "DB connection error: Cannot get product by id" },

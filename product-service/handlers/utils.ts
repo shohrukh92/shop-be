@@ -6,7 +6,7 @@ export const generateResponse = ({
   code?: number;
   body?: Object;
   allowedOrigins?: string;
-}) => {
+} = {}) => {
   return {
     statusCode: code,
     body: JSON.stringify(body),
