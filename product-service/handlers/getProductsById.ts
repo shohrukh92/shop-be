@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { Client } from "pg";
 import "source-map-support/register";
-import { dbOptions } from "./dbOptions";
+import { dbOptions } from "../db/dbOptions";
 
 import { generateResponse } from "./utils";
 

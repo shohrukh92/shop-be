@@ -2,8 +2,8 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import "source-map-support/register";
 import { Client } from "pg";
 import { generateResponse } from "./utils";
-import { dbOptions } from "./dbOptions";
-import { Product, validateProduct } from "./productSchema";
+import { dbOptions } from "../db/dbOptions";
+import { Product, validateProduct } from "../db/productSchema";
 
 export const addProduct: APIGatewayProxyHandler = async (event) => {
   console.log(event);

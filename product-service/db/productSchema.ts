@@ -8,8 +8,8 @@ export interface Product {
 }
 
 const productSchema = Joi.object({
-  title: Joi.string().min(3).max(50).required(),
-  description: Joi.string().min(3).max(100).required(),
+  title: Joi.string().max(50).required(),
+  description: Joi.string().max(100).required(),
   price: Joi.number().required(),
   count: Joi.number().integer().required(),
 });
