@@ -1,5 +1,10 @@
 import type { Serverless } from "serverless/aws";
-import { BUCKET_ARN, DEFAULT_REGION } from "./shared";
+import {
+  BUCKET_ARN,
+  BUCKET_NAME,
+  DEFAULT_REGION,
+  S3_UPLOADED_FOLDER,
+} from "./shared";
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -51,6 +56,19 @@ const serverlessConfiguration: Serverless = {
                 },
               },
             },
+          },
+        },
+      ],
+    },
+    importFileParser: {
+      handler: "handler.importFileParser",
+      events: [
+        {
+          s3: {
+            bucket: BUCKET_NAME,
+            event: "s3:ObjectCreated:*",
+            rules: [{ prefix: `${S3_UPLOADED_FOLDER}/`, suffix: "" }],
+            existing: true,
           },
         },
       ],

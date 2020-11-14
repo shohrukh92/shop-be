@@ -1,10 +1,10 @@
-import { generateResponse } from "./../shared";
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { S3 } from "aws-sdk";
 import "source-map-support/register";
 
 import {
-  getCatalogPath,
+  getFileUploadPath,
+  generateResponse,
   BUCKET_NAME,
   DEFAULT_REGION,
   SIGNED_URL_EXPIRATION,
@@ -12,17 +12,17 @@ import {
 } from "../shared";
 
 export const importProductsFile: APIGatewayProxyHandler = async (event) => {
-  const catalogName = event.queryStringParameters.name;
-  if (!catalogName) {
+  const fileName = event.queryStringParameters.name;
+  if (!fileName) {
     return generateResponse({
       code: 400,
       body: { error: "Bad Request: provide name as query string param" },
     });
   }
 
-  const catalogPath = getCatalogPath(catalogName);
-
+  const catalogPath = getFileUploadPath(fileName);
   const s3 = new S3({ region: DEFAULT_REGION });
+
   const params = {
     Bucket: BUCKET_NAME,
     Key: catalogPath,
