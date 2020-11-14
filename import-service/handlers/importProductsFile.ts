@@ -37,7 +37,7 @@ export const importProductsFile: APIGatewayProxyHandler = async (event) => {
       body: { url },
     });
   } catch (err) {
-    console.error(err);
+    console.log("Error while creating signed url", err);
     return generateResponse({
       code: 500,
       body: { error: "Internal Server Error: cannot create signed url" },
