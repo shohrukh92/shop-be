@@ -2,7 +2,7 @@ import { S3Event } from "aws-lambda";
 import { S3 } from "aws-sdk";
 import "source-map-support/register";
 
-import { readS3Stream } from "./importFileUtil";
+import { readS3Stream } from "./parserUtil";
 import { DEFAULT_REGION } from "./../shared";
 
 export const importFileParser = (event: S3Event) => {

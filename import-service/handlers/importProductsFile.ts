@@ -12,15 +12,15 @@ import {
 } from "../shared";
 
 export const importProductsFile: APIGatewayProxyHandler = async (event) => {
-  const fileName = event.queryStringParameters.name;
-  if (!fileName) {
+  const { name } = event.queryStringParameters;
+  if (!name) {
     return generateResponse({
       code: 400,
       body: { error: "Bad Request: provide name as query string param" },
     });
   }
 
-  const catalogPath = getFileUploadPath(fileName);
+  const catalogPath = getFileUploadPath(name);
   const s3 = new S3({ region: DEFAULT_REGION });
 
   const params = {
