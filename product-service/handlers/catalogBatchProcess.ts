@@ -4,8 +4,7 @@ import { SNS } from "aws-sdk";
 import "source-map-support/register";
 
 import { dbOptions } from "./../db/dbOptions";
-import { Validation, validateProduct } from "./../db/productSchema";
-import { Product } from "../db/productSchema";
+import { Validation, Product, validateProduct } from "./../db/productSchema";
 
 async function addProductToDB(client: Client, product: Product) {
   try {
@@ -29,23 +28,32 @@ async function addProductToDB(client: Client, product: Product) {
   }
 }
 
-function notifyViaSNS(count: number) {
+async function notifyViaSNS(count: number) {
   const sns = new SNS();
-  sns.publish(
-    {
-      Subject: "New Products",
-      Message: `${count} products were successfully insereed into DB`,
-      TopicArn: process.env.SNS_ARN,
-    },
-    () => {
-      console.log("Send email for created products");
-    }
-  );
+  return new Promise((resolve) => {
+    sns.publish(
+      {
+        Subject: "New Products",
+        Message: `${count} products were successfully insereed into DB`,
+        TopicArn: process.env.SNS_ARN,
+      },
+      () => {
+        console.log("Send email for created products");
+        resolve();
+      }
+    );
+  });
 }
 
 export const catalogBatchProcess: SQSHandler = async (event: SQSEvent) => {
-  const client = new Client(dbOptions);
-  await client.connect();
+  let client: Client;
+  try {
+    client = new Client(dbOptions);
+    await client.connect();
+  } catch (err) {
+    console.error("DB Connection error", err);
+    return;
+  }
 
   for (let { body } of event.Records) {
     try {
@@ -56,13 +64,10 @@ export const catalogBatchProcess: SQSHandler = async (event: SQSEvent) => {
         price: Number(price),
         count: Number(count),
       };
-      console.log({ product });
       const validation: Validation = validateProduct(product);
-
       if (validation) {
         throw "Validation Error";
       }
-
       await addProductToDB(client, product);
     } catch (err) {
       console.error(`Error while parsing product: ${body}`, err);
@@ -70,5 +75,5 @@ export const catalogBatchProcess: SQSHandler = async (event: SQSEvent) => {
   }
 
   await client.end();
-  // notifyViaSNS();
+  await notifyViaSNS(event.Records.length);
 };

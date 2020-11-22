@@ -25,6 +25,9 @@ const serverlessConfiguration: Serverless = {
       SQS_URL: {
         Ref: "SQSQueue",
       },
+      SNS_ARN: {
+        Ref: "SNSTopic",
+      },
     },
     iamRoleStatements: [
       {
@@ -32,6 +35,13 @@ const serverlessConfiguration: Serverless = {
         Action: "sqs:*",
         Resource: {
           "Fn::GetAtt": ["SQSQueue", "Arn"],
+        },
+      },
+      {
+        Effect: "Allow",
+        Action: "sns:*",
+        Resource: {
+          Ref: "SNSTopic",
         },
       },
     ],
@@ -42,6 +52,22 @@ const serverlessConfiguration: Serverless = {
         Type: "AWS::SQS::Queue",
         Properties: {
           QueueName: "my-book-store-queue",
+        },
+      },
+      SNSTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          TopicName: "my-book-store-sns-topic",
+        },
+      },
+      SNSSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "92.shohrukh@gmail.com",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "SNSTopic",
+          },
         },
       },
     },
