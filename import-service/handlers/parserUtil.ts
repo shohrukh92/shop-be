@@ -18,15 +18,19 @@ export function readS3Stream(s3: S3, recordKey: string, sqs: SQS) {
     .pipe(stripBom())
     .pipe(csv())
     .on("data", (data) => {
-      console.log("Reading data from csv", data, typeof data);
-
       const product = JSON.stringify(data);
       sqs.sendMessage(
         {
           QueueUrl: QUEUE_URL,
           MessageBody: product,
         },
-        () => console.log("Send message for:" + product)
+        (err) => {
+          if (err) {
+            console.error("Error while sending SQS message", err);
+          } else {
+            console.log("Send SQS message for:" + product);
+          }
+        }
       );
     })
     .on("end", async () => {

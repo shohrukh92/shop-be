@@ -28,18 +28,31 @@ async function addProductToDB(client: Client, product: Product) {
   }
 }
 
-async function notifyViaSNS(count: number) {
+async function notifyViaSNS(count: number, totalPrice: number) {
   const sns = new SNS();
-  return new Promise((resolve) => {
+
+  return new Promise((resolve, reject) => {
+    const pricing = totalPrice > 10 ? "expensive" : "cheap";
     sns.publish(
       {
         Subject: "New Products",
-        Message: `${count} products were successfully insereed into DB`,
+        Message: `${count} products were successfully insereed into DB. Total Price: ${totalPrice}.`,
+        MessageAttributes: {
+          pricing: {
+            DataType: "String",
+            StringValue: pricing,
+          },
+        },
         TopicArn: process.env.SNS_ARN,
       },
-      () => {
-        console.log("Send email for created products");
-        resolve();
+      (err) => {
+        if (err) {
+          console.error("Error while sending email", err);
+          reject();
+        } else {
+          console.log("Send email for created products");
+          resolve();
+        }
       }
     );
   });
@@ -55,6 +68,7 @@ export const catalogBatchProcess: SQSHandler = async (event: SQSEvent) => {
     return;
   }
 
+  let totalPrice = 0; // will be used for SNS Filter Policy
   for (let { body } of event.Records) {
     try {
       const { title, description, price, count } = JSON.parse(body);
@@ -69,11 +83,12 @@ export const catalogBatchProcess: SQSHandler = async (event: SQSEvent) => {
         throw "Validation Error";
       }
       await addProductToDB(client, product);
+      totalPrice += product.price;
     } catch (err) {
       console.error(`Error while parsing product: ${body}`, err);
     }
   }
 
   await client.end();
-  await notifyViaSNS(event.Records.length);
+  await notifyViaSNS(event.Records.length, totalPrice);
 };

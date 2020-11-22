@@ -60,14 +60,22 @@ const serverlessConfiguration: Serverless = {
           TopicName: "my-book-store-sns-topic",
         },
       },
-      SNSSubscription: {
+      SNSExpensiveSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "shohrukh.92@gmail.com",
+          Protocol: "email",
+          FilterPolicy: { pricing: ["expensive"] },
+          TopicArn: { Ref: "SNSTopic" },
+        },
+      },
+      SNSCheapSubscription: {
         Type: "AWS::SNS::Subscription",
         Properties: {
           Endpoint: "92.shohrukh@gmail.com",
           Protocol: "email",
-          TopicArn: {
-            Ref: "SNSTopic",
-          },
+          FilterPolicy: { pricing: ["cheap"] },
+          TopicArn: { Ref: "SNSTopic" },
         },
       },
     },
