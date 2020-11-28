@@ -22,11 +22,14 @@ const serverlessConfiguration: Serverless = {
     name: "aws",
     runtime: "nodejs12.x",
     region: DEFAULT_REGION,
+    stage: "${opt:stage, 'dev'}",
     apiGateway: {
       minimumCompressionSize: 1024,
     },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+      CATALOG_ITEMS_QUEUE_URL:
+        "${cf:product-service-${self:provider.stage}.SQSQueueUrl}",
     },
     iamRoleStatements: [
       {
@@ -38,6 +41,11 @@ const serverlessConfiguration: Serverless = {
         Effect: "Allow",
         Action: "s3:*",
         Resource: [`${BUCKET_ARN}/*`],
+      },
+      {
+        Effect: "Allow",
+        Action: "sqs:*",
+        Resource: "${cf:product-service-${self:provider.stage}.SQSQueueArn}",
       },
     ],
   },

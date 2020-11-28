@@ -1,17 +1,37 @@
-import { S3 } from "aws-sdk";
+import { S3, SQS } from "aws-sdk";
 import * as csv from "csv-parser";
+import * as stripBom from "strip-bom-stream";
 
-import { BUCKET_NAME, S3_PARSED_FOLDER, S3_UPLOADED_FOLDER } from "../shared";
+import {
+  BUCKET_NAME,
+  S3_PARSED_FOLDER,
+  S3_UPLOADED_FOLDER,
+  QUEUE_URL,
+} from "../shared";
 
-export function readS3Stream(s3: S3, recordKey: string) {
+export function readS3Stream(s3: S3, recordKey: string, sqs: SQS) {
   s3.getObject({
     Bucket: BUCKET_NAME,
     Key: recordKey,
   })
     .createReadStream()
+    .pipe(stripBom())
     .pipe(csv())
     .on("data", (data) => {
-      console.log("Reading data from csv", data);
+      const product = JSON.stringify(data);
+      sqs.sendMessage(
+        {
+          QueueUrl: QUEUE_URL,
+          MessageBody: product,
+        },
+        (err) => {
+          if (err) {
+            console.error("Error while sending SQS message", err);
+          } else {
+            console.log("Send SQS message for:" + product);
+          }
+        }
+      );
     })
     .on("end", async () => {
       const sourсePath = `${BUCKET_NAME}/${recordKey}`;
