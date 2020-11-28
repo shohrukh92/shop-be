@@ -17,7 +17,7 @@ const serverlessConfiguration: Serverless = {
       includeModules: true,
     },
   },
-  plugins: ["serverless-webpack"],
+  plugins: ["serverless-webpack", "serverless-pseudo-parameters"],
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
@@ -57,6 +57,14 @@ const serverlessConfiguration: Serverless = {
           http: {
             method: "get",
             path: "import",
+            cors: true,
+            authorizer: {
+              arn:
+                "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-dev-basicAuthorizer",
+              resultTtlInSeconds: 0,
+              identitySource: "method.request.header.Authorization",
+              type: "token",
+            },
             request: {
               parameters: {
                 querystrings: {

@@ -1,10 +1,15 @@
 import { APIGatewayTokenAuthorizerHandler, PolicyDocument } from "aws-lambda";
 import "source-map-support/register";
 
-const users = {
-  admin: "password",
-  author: "12345",
-};
+function checkPasswordWithEnv(
+  username: string,
+  password: string
+): "Allow" | "Deny" {
+  const storedUserPassword = process.env[username];
+  return !storedUserPassword || storedUserPassword !== password
+    ? "Deny"
+    : "Allow";
+}
 
 function generatePolicy(
   principalId: string,
@@ -42,12 +47,12 @@ export const basicAuthorizer: APIGatewayTokenAuthorizerHandler = (
     const [username, password] = buff.toString("utf-8").split(":");
 
     console.log({ username, password });
-    const userExists = users[username] && users[username] === password;
-    const effect = userExists ? "Allow" : "Deny";
 
+    const effect = checkPasswordWithEnv(username, password);
     const policy = generatePolicy(encodedCreds, event.methodArn, effect);
     cb(null, policy);
-  } catch (e) {
-    cb(`Unauthorized: ${e.message}`);
+  } catch (err) {
+    const msg = err ? err.message : "";
+    cb(`Unauthorized: ${msg}`);
   }
 };
