@@ -43,16 +43,20 @@ export const basicAuthorizer: APIGatewayTokenAuthorizerHandler = (
   try {
     const authToken: string = event.authorizationToken;
     const encodedCreds = authToken.split(" ")[1];
-    const buff = Buffer.from(encodedCreds, "base64");
-    const [username, password] = buff.toString("utf-8").split(":");
 
-    console.log({ username, password });
+    let effect = "Deny";
+    if (encodedCreds) {
+      const buff = Buffer.from(encodedCreds, "base64");
+      const [username, password] = buff.toString("utf-8").split(":");
 
-    const effect = checkPasswordWithEnv(username, password);
+      console.log({ username, password });
+      effect = checkPasswordWithEnv(username, password);
+    }
+
     const policy = generatePolicy(encodedCreds, event.methodArn, effect);
     cb(null, policy);
   } catch (err) {
-    const msg = err ? err.message : "";
-    cb(`Unauthorized: ${msg}`);
+    console.error(err);
+    cb(`Unauthorized`);
   }
 };

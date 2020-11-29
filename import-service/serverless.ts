@@ -1,10 +1,26 @@
-import type { Serverless } from "serverless/aws";
+import type { CloudFormationResource, Serverless } from "serverless/aws";
 import {
   BUCKET_ARN,
   BUCKET_NAME,
   DEFAULT_REGION,
   S3_UPLOADED_FOLDER,
 } from "./shared";
+
+function generateGatewayResponseCors(
+  ResponseType: string
+): CloudFormationResource {
+  return {
+    Type: "AWS::ApiGateway::GatewayResponse",
+    Properties: {
+      ResponseParameters: {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+        "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
+      },
+      ResponseType,
+      RestApiId: { Ref: "ApiGatewayRestApi" },
+    },
+  };
+}
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -18,6 +34,12 @@ const serverlessConfiguration: Serverless = {
     },
   },
   plugins: ["serverless-webpack", "serverless-pseudo-parameters"],
+  resources: {
+    Resources: {
+      GatewayResponseDenied: generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: generateGatewayResponseCors("UNAUTHORIZED"),
+    },
+  },
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
