@@ -1,4 +1,23 @@
-import type { Serverless } from "serverless/aws";
+import type { CloudFormationResource, Serverless } from "serverless/aws";
+
+const authorizerArn =
+  "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-${self:provider.stage}-requestAuthorizer";
+
+export const generateGatewayResponseCors = (
+  ResponseType: string
+): CloudFormationResource => {
+  return {
+    Type: "AWS::ApiGateway::GatewayResponse",
+    Properties: {
+      ResponseParameters: {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+        "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
+      },
+      ResponseType,
+      RestApiId: { Ref: "ApiGatewayRestApi" },
+    },
+  };
+};
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -11,7 +30,11 @@ const serverlessConfiguration: Serverless = {
       includeModules: true,
     },
   },
-  plugins: ["serverless-webpack", "serverless-dotenv-plugin"],
+  plugins: [
+    "serverless-webpack",
+    "serverless-dotenv-plugin",
+    "serverless-pseudo-parameters",
+  ],
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
@@ -78,6 +101,8 @@ const serverlessConfiguration: Serverless = {
           TopicArn: { Ref: "SNSTopic" },
         },
       },
+      GatewayResponseDenied: generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: generateGatewayResponseCors("UNAUTHORIZED"),
     },
     Outputs: {
       SQSQueueUrl: {
@@ -127,6 +152,13 @@ const serverlessConfiguration: Serverless = {
             method: "post",
             path: "products",
             cors: true,
+            authorizer: {
+              name: "requestAuthorizer",
+              arn: authorizerArn,
+              resultTtlInSeconds: 0,
+              identitySource: "method.request.querystring.token",
+              type: "request",
+            },
           },
         },
       ],

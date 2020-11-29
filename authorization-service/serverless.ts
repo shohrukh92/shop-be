@@ -27,6 +27,9 @@ const serverlessConfiguration: Serverless = {
     basicAuthorizer: {
       handler: "handler.basicAuthorizer",
     },
+    requestAuthorizer: {
+      handler: "handler.requestAuthorizer",
+    },
   },
 };
 
