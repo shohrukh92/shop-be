@@ -1,9 +1,9 @@
 import type { Serverless } from "serverless/aws";
+import * as Utils from "../shared/utils";
 import {
   BUCKET_ARN,
   BUCKET_NAME,
   DEFAULT_REGION,
-  generateGatewayResponseCors,
   S3_UPLOADED_FOLDER,
 } from "./shared";
 
@@ -24,8 +24,10 @@ const serverlessConfiguration: Serverless = {
   plugins: ["serverless-webpack", "serverless-pseudo-parameters"],
   resources: {
     Resources: {
-      GatewayResponseDenied: generateGatewayResponseCors("ACCESS_DENIED"),
-      GatewayResponseUnauthorized: generateGatewayResponseCors("UNAUTHORIZED"),
+      GatewayResponseDenied: Utils.generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: Utils.generateGatewayResponseCors(
+        "UNAUTHORIZED"
+      ),
     },
   },
   provider: {

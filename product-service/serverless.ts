@@ -1,23 +1,8 @@
-import type { CloudFormationResource, Serverless } from "serverless/aws";
+import type { Serverless } from "serverless/aws";
+import * as Utils from "../shared/utils";
 
 const authorizerArn =
   "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-${self:provider.stage}-requestAuthorizer";
-
-export const generateGatewayResponseCors = (
-  ResponseType: string
-): CloudFormationResource => {
-  return {
-    Type: "AWS::ApiGateway::GatewayResponse",
-    Properties: {
-      ResponseParameters: {
-        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
-        "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
-      },
-      ResponseType,
-      RestApiId: { Ref: "ApiGatewayRestApi" },
-    },
-  };
-};
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -101,8 +86,10 @@ const serverlessConfiguration: Serverless = {
           TopicArn: { Ref: "SNSTopic" },
         },
       },
-      GatewayResponseDenied: generateGatewayResponseCors("ACCESS_DENIED"),
-      GatewayResponseUnauthorized: generateGatewayResponseCors("UNAUTHORIZED"),
+      GatewayResponseDenied: Utils.generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: Utils.generateGatewayResponseCors(
+        "UNAUTHORIZED"
+      ),
     },
     Outputs: {
       SQSQueueUrl: {

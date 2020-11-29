@@ -1,10 +1,9 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import { S3 } from "aws-sdk";
 import "source-map-support/register";
-
+import * as Utils from "../../shared/utils.js";
 import {
   getFileUploadPath,
-  generateResponse,
   BUCKET_NAME,
   DEFAULT_REGION,
   SIGNED_URL_EXPIRATION,
@@ -14,7 +13,7 @@ import {
 export const importProductsFile: APIGatewayProxyHandler = async (event) => {
   const { name } = event.queryStringParameters;
   if (!name) {
-    return generateResponse({
+    return Utils.generateResponse({
       code: 400,
       body: { error: "Bad Request: provide name as query string param" },
     });
@@ -32,13 +31,13 @@ export const importProductsFile: APIGatewayProxyHandler = async (event) => {
 
   try {
     const url = await s3.getSignedUrlPromise("putObject", params);
-    return generateResponse({
+    return Utils.generateResponse({
       code: 200,
       body: { url },
     });
   } catch (err) {
     console.log("Error while creating signed url", err);
-    return generateResponse({
+    return Utils.generateResponse({
       code: 500,
       body: { error: "Internal Server Error: cannot create signed url" },
     });
