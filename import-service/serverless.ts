@@ -1,26 +1,14 @@
-import type { CloudFormationResource, Serverless } from "serverless/aws";
+import type { Serverless } from "serverless/aws";
 import {
   BUCKET_ARN,
   BUCKET_NAME,
   DEFAULT_REGION,
+  generateGatewayResponseCors,
   S3_UPLOADED_FOLDER,
 } from "./shared";
 
-function generateGatewayResponseCors(
-  ResponseType: string
-): CloudFormationResource {
-  return {
-    Type: "AWS::ApiGateway::GatewayResponse",
-    Properties: {
-      ResponseParameters: {
-        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
-        "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
-      },
-      ResponseType,
-      RestApiId: { Ref: "ApiGatewayRestApi" },
-    },
-  };
-}
+const authorizerArn =
+  "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-${self:provider.stage}-basicAuthorizer";
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -81,8 +69,8 @@ const serverlessConfiguration: Serverless = {
             path: "import",
             cors: true,
             authorizer: {
-              arn:
-                "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-dev-basicAuthorizer",
+              name: "tokenAuthorizer",
+              arn: authorizerArn,
               resultTtlInSeconds: 0,
               identitySource: "method.request.header.Authorization",
               type: "token",

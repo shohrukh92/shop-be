@@ -1,3 +1,5 @@
+import { CloudFormationResource } from "serverless/aws";
+
 export const BUCKET_NAME = "my-book-store-bucket";
 export const BUCKET_ARN = `arn:aws:s3:::${BUCKET_NAME}`;
 export const DEFAULT_REGION = "eu-west-1";
@@ -20,5 +22,21 @@ export const generateResponse = ({
     statusCode: code,
     body: JSON.stringify(body),
     headers: { "Access-Control-Allow-Origin": allowedOrigins },
+  };
+};
+
+export const generateGatewayResponseCors = (
+  ResponseType: string
+): CloudFormationResource => {
+  return {
+    Type: "AWS::ApiGateway::GatewayResponse",
+    Properties: {
+      ResponseParameters: {
+        "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+        "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
+      },
+      ResponseType,
+      RestApiId: { Ref: "ApiGatewayRestApi" },
+    },
   };
 };
