@@ -2,7 +2,7 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import { Client, QueryResult } from "pg";
 import "source-map-support/register";
 
-import { generateResponse } from "./utils";
+import * as Utils from "../../shared/utils.js";
 import { dbOptions } from "../db/dbOptions";
 import { Product, Validation, validateProduct } from "../db/productSchema";
 
@@ -15,7 +15,7 @@ export const addProduct: APIGatewayProxyHandler = async (event) => {
     const validation: Validation = validateProduct(product);
 
     if (validation) {
-      return generateResponse({
+      return Utils.generateResponse({
         code: 400,
         body: validation.errors,
       });
@@ -40,18 +40,15 @@ export const addProduct: APIGatewayProxyHandler = async (event) => {
 
     await client.query("commit"); // transaction ends
 
-    return generateResponse({
+    return Utils.generateResponse({
       code: 201,
-      body: {
-        ...insertedProduct,
-        count,
-      },
+      body: { ...insertedProduct, count },
     });
   } catch (err) {
     await client.query("rollback"); // cancel transaction
 
     console.error(err);
-    return generateResponse({
+    return Utils.generateResponse({
       code: 500,
       body: { error: "DB connection error: Cannot insert product" },
     });

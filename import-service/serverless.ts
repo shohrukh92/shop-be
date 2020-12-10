@@ -1,10 +1,14 @@
 import type { Serverless } from "serverless/aws";
+import * as Utils from "../shared/utils";
 import {
   BUCKET_ARN,
   BUCKET_NAME,
   DEFAULT_REGION,
   S3_UPLOADED_FOLDER,
 } from "./shared";
+
+const authorizerArn =
+  "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-${self:provider.stage}-basicAuthorizer";
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -17,7 +21,15 @@ const serverlessConfiguration: Serverless = {
       includeModules: true,
     },
   },
-  plugins: ["serverless-webpack"],
+  plugins: ["serverless-webpack", "serverless-pseudo-parameters"],
+  resources: {
+    Resources: {
+      GatewayResponseDenied: Utils.generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: Utils.generateGatewayResponseCors(
+        "UNAUTHORIZED"
+      ),
+    },
+  },
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
@@ -57,6 +69,14 @@ const serverlessConfiguration: Serverless = {
           http: {
             method: "get",
             path: "import",
+            cors: true,
+            authorizer: {
+              name: "tokenAuthorizer",
+              arn: authorizerArn,
+              resultTtlInSeconds: 0,
+              identitySource: "method.request.header.Authorization",
+              type: "token",
+            },
             request: {
               parameters: {
                 querystrings: {

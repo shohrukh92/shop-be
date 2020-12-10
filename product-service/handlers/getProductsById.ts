@@ -2,9 +2,9 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import { Client, QueryResult } from "pg";
 import "source-map-support/register";
 
+import * as Utils from "../../shared/utils.js";
 import { dbOptions } from "../db/dbOptions";
 import { Product } from "../db/productSchema";
-import { generateResponse } from "./utils";
 
 export const getProductsById: APIGatewayProxyHandler = async (event) => {
   console.log(event);
@@ -28,16 +28,16 @@ export const getProductsById: APIGatewayProxyHandler = async (event) => {
 
     if (queryResult.rows.length) {
       const product: Product = queryResult.rows[0];
-      return generateResponse({ body: product });
+      return Utils.generateResponse({ body: product });
     }
 
-    return generateResponse({
+    return Utils.generateResponse({
       code: 404,
       body: { error: "Product not found in db" },
     });
   } catch (err) {
     console.error(err);
-    return generateResponse({
+    return Utils.generateResponse({
       code: 500,
       body: { error: "DB connection error: Cannot get product by id" },
     });

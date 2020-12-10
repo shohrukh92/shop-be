@@ -2,7 +2,7 @@ import { APIGatewayProxyHandler } from "aws-lambda";
 import { Client, QueryResult } from "pg";
 import "source-map-support/register";
 
-import { generateResponse } from "./utils";
+import * as Utils from "../../shared/utils.js";
 import { dbOptions } from "../db/dbOptions";
 import { Product } from "../db/productSchema";
 
@@ -21,10 +21,10 @@ export const getProductsList: APIGatewayProxyHandler = async (event) => {
       on p.id = s.product_id
     `);
 
-    return generateResponse({ body: queryResult.rows });
+    return Utils.generateResponse({ body: queryResult.rows });
   } catch (err) {
     console.log(err);
-    return generateResponse({
+    return Utils.generateResponse({
       code: 500,
       body: { error: "DB connection error: Cannot get list of products" },
     });

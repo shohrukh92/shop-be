@@ -1,4 +1,8 @@
 import type { Serverless } from "serverless/aws";
+import * as Utils from "../shared/utils";
+
+const authorizerArn =
+  "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-${self:provider.stage}-requestAuthorizer";
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -11,7 +15,11 @@ const serverlessConfiguration: Serverless = {
       includeModules: true,
     },
   },
-  plugins: ["serverless-webpack", "serverless-dotenv-plugin"],
+  plugins: [
+    "serverless-webpack",
+    "serverless-dotenv-plugin",
+    "serverless-pseudo-parameters",
+  ],
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
@@ -78,6 +86,10 @@ const serverlessConfiguration: Serverless = {
           TopicArn: { Ref: "SNSTopic" },
         },
       },
+      GatewayResponseDenied: Utils.generateGatewayResponseCors("ACCESS_DENIED"),
+      GatewayResponseUnauthorized: Utils.generateGatewayResponseCors(
+        "UNAUTHORIZED"
+      ),
     },
     Outputs: {
       SQSQueueUrl: {
@@ -127,6 +139,13 @@ const serverlessConfiguration: Serverless = {
             method: "post",
             path: "products",
             cors: true,
+            authorizer: {
+              name: "requestAuthorizer",
+              arn: authorizerArn,
+              resultTtlInSeconds: 0,
+              identitySource: "method.request.querystring.token",
+              type: "request",
+            },
           },
         },
       ],
