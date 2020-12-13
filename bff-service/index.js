@@ -21,8 +21,9 @@ app.all("/*", (req, res) => {
 
   if (recipientUrl) {
     let request = null;
-    if (cachedRequests[originalUrl]) {
-      request = cachedRequests[originalUrl].getData();
+    const cacheKey = `${method}:${originalUrl}`;
+    if (cachedRequests[cacheKey]) {
+      request = cachedRequests[cacheKey].getData();
     } else {
       const axiosConfig = {
         method,

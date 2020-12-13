@@ -41,5 +41,5 @@ async function getProductsList() {
 }
 
 module.exports = {
-  "/products": new CachedRequest(getProductsList),
+  "GET:/products": new CachedRequest(getProductsList),
 };
