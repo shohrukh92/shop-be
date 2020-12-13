@@ -7,8 +7,9 @@
     "start": "node index.js",
     "start:dev": "nodemon index.js",
     "eb-init": "eb init shohrukh92-bff-api --platform node.js --region eu-west-1",
-    "eb-create": "eb create development --single --cname shohrukh92-bff-api-dev",
-    "eb-set-env": "eb setenv `cat .env | sed '/^#/ d' | sed '/^$/ d'` -e development",
+    "eb-create": "eb create bff-api-dev --single --cname shohrukh92-bff-api-dev",
+    "eb-terminate": "eb terminate bff-api-dev",
+    "eb-set-env": "eb setenv `cat .env | sed '/^#/ d' | sed '/^$/ d'` -e bff-api-dev",
     "eb-deploy": "eb deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

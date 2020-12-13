@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios").default;
+const cachedRequests = require("./cached-requests");
 require("dotenv").config();
 
 const app = express();
@@ -19,17 +20,23 @@ app.all("/*", (req, res) => {
   console.log({ recipientUrl });
 
   if (recipientUrl) {
-    const axiosConfig = {
-      method,
-      url: recipientUrl + originalUrl,
-      ...(Object.keys(body || {}).length > 0 && { data: body }),
-    };
+    let request = null;
+    if (cachedRequests[originalUrl]) {
+      request = cachedRequests[originalUrl].getData();
+    } else {
+      const axiosConfig = {
+        method,
+        url: recipientUrl + originalUrl,
+        ...(Object.keys(body || {}).length > 0 && { data: body }),
+      };
 
-    console.log({ axiosConfig });
+      console.log({ axiosConfig });
+      request = axios(axiosConfig);
+    }
 
-    axios(axiosConfig)
+    request
       .then((response) => {
-        console.log("Response from recipient", response.data);
+        console.log("Response from recipient", typeof response.data);
         res.json(response.data);
       })
       .catch((error) => {
